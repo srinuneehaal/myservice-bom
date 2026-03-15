@@ -17,9 +17,9 @@ The root [`pom.xml`](pom.xml) keeps versions in one place as properties.
 | `spring-boot.version` | `3.4.13` |
 | `org-json.version` | `20251224` |
 | `commons-io.version` | `2.21.0` |
-| `java.version` | `17` |
+| `java.version` | `21` |
 
-Use `java.version` as the baseline. Microservices can override it to `21` if your platform standardizes on Java 21.
+Use `java.version` as the platform baseline for all consuming microservices.
 
 ## Consumption Options
 
@@ -95,7 +95,7 @@ That consumer repository must authenticate to GitHub Packages. In GitHub Actions
 - Update dependency versions in root properties only.
 - Record each release in [`CHANGELOG.md`](CHANGELOG.md).
 - GitHub Packages publish target: `https://maven.pkg.github.com/srinuneehaal/myservice-bom`
-- Release publishing runs from GitHub Actions when a GitHub Release is published, or when the workflow is manually dispatched from `main`.
+- Publishing runs from GitHub Actions on every push to `main` and on manual workflow dispatches. Pull requests validate only and do not publish.
 - Validate changes before release:
 
 ```bash

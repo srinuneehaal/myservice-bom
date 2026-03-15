@@ -6,6 +6,11 @@ The project follows semantic versioning.
 
 ## [Unreleased]
 
+### Changed
+
+- raised the BOM Java baseline from 17 to 21
+- changed GitHub Actions publishing to run on `main` pushes instead of release-only events
+
 ## [1.0.0-SNAPSHOT] - 2026-03-14
 
 ### Added
