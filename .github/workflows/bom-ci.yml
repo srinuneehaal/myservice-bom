@@ -5,6 +5,10 @@ on:
     branches:
       - main
   pull_request:
+  release:
+    types:
+      - published
+  workflow_dispatch:
 
 jobs:
   validate:
@@ -29,3 +33,30 @@ jobs:
 
       - name: Install BOM locally
         run: mvn -B -ntp -U clean install
+
+  publish:
+    needs: validate
+    if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Temurin 17 for publishing
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+          server-id: github
+          server-username: GITHUB_ACTOR
+          server-password: GITHUB_TOKEN
+
+      - name: Publish BOM to GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: mvn -B -ntp -U deploy

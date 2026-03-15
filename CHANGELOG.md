@@ -13,3 +13,4 @@ The project follows semantic versioning.
 - initial `myservice-parent` BOM project for Spring Boot microservices
 - centralized version properties for Spring Boot, `org.json`, and `commons-io`
 - GitHub Actions CI workflow for BOM validation
+- GitHub Packages publishing configuration for `srinuneehaal/myservice-bom`

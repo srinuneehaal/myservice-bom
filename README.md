@@ -68,6 +68,21 @@ After either setup, declare common dependencies without versions:
 </dependencies>
 ```
 
+## Repository Access
+
+When your microservice project lives in another repository, add the GitHub Packages Maven repository:
+
+```xml
+<repositories>
+    <repository>
+        <id>github</id>
+        <url>https://maven.pkg.github.com/srinuneehaal/myservice-bom</url>
+    </repository>
+</repositories>
+```
+
+That consumer repository must authenticate to GitHub Packages. In GitHub Actions, use `actions/setup-java` with `server-id: github`. For local development, configure matching credentials in `~/.m2/settings.xml`.
+
 ## Repository Layout
 
 - [`pom.xml`](pom.xml): publishable BOM and lightweight parent POM
@@ -79,6 +94,8 @@ After either setup, declare common dependencies without versions:
 - Version the BOM independently using semantic versioning.
 - Update dependency versions in root properties only.
 - Record each release in [`CHANGELOG.md`](CHANGELOG.md).
+- GitHub Packages publish target: `https://maven.pkg.github.com/srinuneehaal/myservice-bom`
+- Release publishing runs from GitHub Actions when a GitHub Release is published, or when the workflow is manually dispatched from `main`.
 - Validate changes before release:
 
 ```bash

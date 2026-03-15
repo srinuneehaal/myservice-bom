@@ -24,6 +24,10 @@
         <maven.compiler.plugin.version>3.15.0</maven.compiler.plugin.version>
         <maven.surefire.plugin.version>3.5.5</maven.surefire.plugin.version>
         <maven.enforcer.plugin.version>3.6.2</maven.enforcer.plugin.version>
+
+        <github.package.owner>srinuneehaal</github.package.owner>
+        <github.package.repository>myservice-bom</github.package.repository>
+        <github.package.url>https://maven.pkg.github.com/${github.package.owner}/${github.package.repository}</github.package.url>
     </properties>
 
     <dependencyManagement>
@@ -49,6 +53,19 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>${github.package.url}</url>
+        </repository>
+        <snapshotRepository>
+            <id>github</id>
+            <name>GitHub Packages Snapshots</name>
+            <url>${github.package.url}</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <build>
         <pluginManagement>
