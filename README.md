@@ -86,6 +86,7 @@ That consumer repository must authenticate to GitHub Packages. In GitHub Actions
 ## Repository Layout
 
 - [`pom.xml`](pom.xml): publishable BOM and lightweight parent POM
+- [`docs/BOM_PARENT_TEAM_GUIDE.md`](docs/BOM_PARENT_TEAM_GUIDE.md): Confluence-ready team documentation with demos
 - [`.github/workflows/bom-ci.yml`](.github/workflows/bom-ci.yml): CI validation for the BOM
 - [`CHANGELOG.md`](CHANGELOG.md): release history
 

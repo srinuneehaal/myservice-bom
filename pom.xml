@@ -11,6 +11,11 @@
     <name>myservice-parent</name>
     <description>Centralized dependency and parent POM for Spring Boot microservices.</description>
 
+    <!--
+      Parent-POM properties:
+      These are inherited by child projects only when they use this POM as <parent>.
+      They are not exposed to projects that only import this POM as a BOM.
+    -->
     <properties>
         <java.version>21</java.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
@@ -30,6 +35,11 @@
         <github.package.url>https://maven.pkg.github.com/${github.package.owner}/${github.package.repository}</github.package.url>
     </properties>
 
+    <!--
+      BOM behavior:
+      dependencyManagement centralizes dependency versions.
+      It does not add these dependencies automatically; child projects still declare them in <dependencies>.
+    -->
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -54,6 +64,10 @@
         </dependencies>
     </dependencyManagement>
 
+    <!--
+      Parent/build publishing behavior:
+      This controls where this artifact is published and is not part of BOM import behavior.
+    -->
     <distributionManagement>
         <repository>
             <id>github</id>
@@ -67,7 +81,15 @@
         </snapshotRepository>
     </distributionManagement>
 
+    <!--
+      Parent build behavior:
+      build/plugins are applied to child projects that inherit from this POM as <parent>.
+    -->
     <build>
+        <!--
+          pluginManagement is the plugin equivalent of dependencyManagement:
+          it defines default plugin versions/configuration, but does not execute plugins by itself.
+        -->
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -78,6 +100,9 @@
             </plugins>
         </pluginManagement>
 
+        <!--
+          plugins actually apply plugin executions/configuration to the build.
+        -->
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
