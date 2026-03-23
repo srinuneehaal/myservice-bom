@@ -20,6 +20,33 @@ It currently serves two roles:
 - `pluginManagement` manages plugin versions/configuration, but does not run plugins
 - `<plugins>` applies plugins to the build
 
+## Diagram 1: Big Picture
+
+```text
+                        +----------------------------------+
+                        |  myservice-parent (this repo)    |
+                        |----------------------------------|
+                        | properties                       |
+                        | dependencyManagement             |
+                        | pluginManagement                 |
+                        | build/plugins                    |
+                        | distributionManagement           |
+                        +----------------------------------+
+                                  /               \
+                                 /                 \
+                                /                   \
+                               v                     v
+                +---------------------------+   +---------------------------+
+                | Service uses <parent>     |   | Service imports as BOM    |
+                +---------------------------+   +---------------------------+
+                | gets properties           |   | gets managed dep versions |
+                | gets dep mgmt             |   | only                      |
+                | gets plugin mgmt          |   |                           |
+                | gets build plugins        |   | does NOT get properties   |
+                | gets build rules          |   | does NOT get plugins      |
+                +---------------------------+   +---------------------------+
+```
+
 ## Why We Use This Repo
 
 We want one platform artifact to standardize:
@@ -66,6 +93,31 @@ When a project uses a parent POM, it inherits:
 
 This is the right choice when the service should follow the platform build standard.
 
+#### Diagram 2: Parent Inheritance
+
+```text
++-----------------------------+
+| myservice-parent            |
+|-----------------------------|
+| properties                  |
+| dependencyManagement        |
+| pluginManagement            |
+| plugins                     |
+| enforcer rules              |
++-------------+---------------+
+              |
+              | inherited via <parent>
+              v
++-----------------------------+
+| orders-service              |
+|-----------------------------|
+| can use ${java.version}     |
+| can omit dep versions       |
+| gets compiler plugin config |
+| gets enforcer checks        |
++-----------------------------+
+```
+
 ### 3. BOM
 
 A BOM is consumed like this:
@@ -95,6 +147,31 @@ It does not inherit:
 
 This is the right choice when a service must keep a different parent POM but still wants our dependency version alignment.
 
+#### Diagram 3: BOM Import
+
+```text
++-----------------------------+
+| myservice-parent            |
+|-----------------------------|
+| dependencyManagement        |
+| properties                  |
+| pluginManagement            |
+| plugins                     |
++-------------+---------------+
+              |
+              | imported through
+              | <dependencyManagement>
+              v
++-----------------------------+
+| orders-service              |
+|-----------------------------|
+| gets managed dep versions   |
+| does NOT get properties     |
+| does NOT get plugin config  |
+| does NOT get build rules    |
++-----------------------------+
+```
+
 ## What Our Current POM Provides
 
 The current root `pom.xml` centralizes:
@@ -117,6 +194,24 @@ Important: because the artifact is named `myservice-parent`, teams may assume ev
 | Inherit `maven-compiler-plugin` config | Yes | No |
 | Inherit `maven-enforcer-plugin` rules | Yes | No |
 | Inherit GitHub package publishing config | Yes | No |
+
+#### Diagram 4: What Flows to the Consumer
+
+```text
+Legend:
+  [YES] = available in consumer project
+  [NO ] = not available in consumer project
+
++-----------------------------------+---------+---------+
+| Capability                        | Parent  | BOM     |
++-----------------------------------+---------+---------+
+| Dependency versions               | [YES]   | [YES]   |
+| Properties                        | [YES]   | [NO ]   |
+| Plugin default versions/config    | [YES]   | [NO ]   |
+| Plugin executions                 | [YES]   | [NO ]   |
+| Java/Maven enforcement rules      | [YES]   | [NO ]   |
++-----------------------------------+---------+---------+
+```
 
 ## Demo 1: Microservice Using This Artifact as Parent
 
@@ -238,6 +333,24 @@ If the project only imported our artifact as a BOM, `${maven.compiler.release}` 
 - imported BOM: only managed dependencies come in
 - parent POM: properties and build config come in
 
+#### Diagram 5: Why the Common Mistake Happens
+
+```text
+Developer imports BOM
+        |
+        v
+Expects ${maven.compiler.release}
+        |
+        v
+Maven looks in current project / inherited parent
+        |
+        v
+Property not found from BOM import
+        |
+        v
+Build config fails or behaves unexpectedly
+```
+
 ## Recommended Team Standard
 
 Use this repo as a parent POM when:
@@ -270,6 +383,29 @@ This gives the team a single place to manage:
 - plugin versions
 - build enforcement
 
+## Diagram 6: Team Decision Flow
+
+```text
+Start
+  |
+  v
+Does the service need to keep another parent POM?
+  |\
+  | Yes
+  |  \
+  |   v
+  |  Import myservice-parent as BOM
+  |  - use for dependency version alignment only
+  |  - define service-specific properties/plugins locally
+  |
+  | No
+  v
+Use myservice-parent as <parent>
+  - inherit platform properties
+  - inherit plugin defaults
+  - inherit build rules
+```
+
 ## How to Add or Update a Managed Dependency
 
 Update the root `pom.xml` in this repository:
@@ -278,6 +414,25 @@ Update the root `pom.xml` in this repository:
 2. Add or update the dependency in `<dependencyManagement>`
 3. Release the new platform POM version
 4. Upgrade consuming services to the new version
+
+## Diagram 7: Where To Make Changes
+
+```text
+Need to update a library version?
+  -> change <properties> and/or <dependencyManagement> in platform POM
+
+Need to update Java version or compiler settings?
+  -> change <properties> and build plugin configuration in platform POM
+
+Need to add a plugin default for all standard services?
+  -> change <pluginManagement> or <plugins> in platform POM
+
+Need a service-only dependency?
+  -> add it in that service's <dependencies>
+
+Need a service-only plugin behavior?
+  -> add it in that service's <build><plugins>
+```
 
 Example:
 
